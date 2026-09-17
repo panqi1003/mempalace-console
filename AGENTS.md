@@ -1,6 +1,6 @@
 # AGENTS.md — 给 AI 编码助手的安装配置指南
 
-> 本文件面向 AI coding agent。用户让你"配置/安装 mempalace-viz"时，按下列步骤执行，不跳步、不猜路径。
+> 本文件面向 AI coding agent。用户让你"配置/安装 mempalace-console"时，按下列步骤执行，不跳步、不猜路径。
 
 ## 项目是什么
 

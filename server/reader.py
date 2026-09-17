@@ -181,7 +181,7 @@ class _StdioSession:
                     "params": {
                         "protocolVersion": "2025-06-18",
                         "capabilities": {},
-                        "clientInfo": {"name": "mempalace-viz", "version": "0.1.0"},
+                        "clientInfo": {"name": "mempalace-console", "version": "1.0.0"},
                     },
                 }
             )

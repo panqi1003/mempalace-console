@@ -1,8 +1,8 @@
 # MemPalace 可视化管理台
 
-![License](https://img.shields.io/github/license/panqi1003/mempalace-viz)
+![License](https://img.shields.io/github/license/panqi1003/mempalace-console)
 ![Python](https://img.shields.io/badge/python-3.10%2B-3776AB)
-![Release](https://img.shields.io/github/v/release/panqi1003/mempalace-viz)
+![Release](https://img.shields.io/github/v/release/panqi1003/mempalace-console)
 
 给 [MemPalace](https://github.com/MemPalace/mempalace) 的本地只读可视化管理台——把记忆宫殿的状态、检索、知识图谱与运维健康从"黑箱"变成浏览器里可观察、可验证的界面。
 

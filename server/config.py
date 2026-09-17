@@ -87,7 +87,8 @@ def find_exe(names: list[str], env_var: str) -> str | None:
 
 VIZ_CONFIG_CANDIDATES = [
     Path(__file__).resolve().parent.parent / "mempalace_viz.json",
-    Path.home() / ".mempalace-viz" / "config.json",
+    Path.home() / ".mempalace-console" / "config.json",
+    Path.home() / ".mempalace-viz" / "config.json",  # 兼容旧路径
 ]
 
 
