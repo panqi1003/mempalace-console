@@ -1,0 +1,9 @@
+{
+  "_说明": "可选配置模板：复制为 mempalace_viz.json 使用；null 字段走默认解析或隐藏对应 UI 卡片。exe 未配置时用 PATH 里的 which() 发现",
+  "palace": null,
+  "mempalace_exe": null,
+  "mempalace_mcp_exe": null,
+  "hub_log": null,
+  "backup_dir": null,
+  "port": 8766
+}

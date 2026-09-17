@@ -1,0 +1,6 @@
+# 跨平台换行约定：Windows 脚本必须 CRLF（cmd 读 LF 会截断命令），shell 脚本必须 LF
+* text=auto
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.sh text eol=lf
+*.png binary

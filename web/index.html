@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b0f14">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b0f14'/%3E%3Cpath d='M8 10h16M8 16h16M8 22h10' stroke='%232dd4bf' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+  <title data-i18n="app.title">MemPalace 可视化管理台</title>
+  <link rel="stylesheet" href="/web/css/tokens.css">
+  <link rel="stylesheet" href="/web/css/app.css">
+</head>
+<body>
+  <a href="#main" class="skip-link" id="skip-link" data-i18n="app.skip">跳到主内容</a>
+  <noscript>
+    <div style="padding:24px;font-family:sans-serif;color:#e6ebf2;background:#0b0f14" data-i18n="app.noscript">
+      本管理台需要启用 JavaScript（原生 ES 模块）才能运行。
+    </div>
+  </noscript>
+  <h1 class="sr-only" data-i18n="app.h1">MemPalace 可视化管理台</h1>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-name" translate="no">MemPalace</span>
+      <span class="brand-sub" data-i18n="app.brandSub">VIS · 只读</span>
+    </div>
+    <div class="global-search">
+      <input id="global-search" name="q" type="search" autocomplete="off" spellcheck="false" placeholder="语义搜索记忆，回车执行…" aria-label="全局语义搜索" data-i18n-placeholder="app.searchPh" data-i18n-aria="app.searchAria">
+    </div>
+    <div class="top-status">
+      <div class="lang-switch" id="lang-switch" role="group" aria-label="语言 / Language" translate="no">
+        <button type="button" data-lang="zh">中文</button>
+        <button type="button" data-lang="en">EN</button>
+      </div>
+      <button type="button" class="health-chip" id="health-chip" title="体检结论（点击进入记忆体检）" data-i18n-title="app.chipTitle">体检：未运行</button>
+      <span class="tier-dot" id="tier-dot" role="img" aria-label="数据链路状态" data-i18n-aria="app.tierAria"></span>
+    </div>
+  </header>
+
+  <nav class="rail" id="rail" aria-label="主导航" data-i18n-aria="nav.aria">
+    <a href="#/overview" data-view="overview"><span class="rail-ico">01</span><span data-i18n="nav.overview">总览</span></a>
+    <a href="#/structure" data-view="structure"><span class="rail-ico">02</span><span data-i18n="nav.structure">结构浏览</span></a>
+    <a href="#/search" data-view="search"><span class="rail-ico">03</span><span data-i18n="nav.search">语义搜索</span></a>
+    <div class="rail-sep" data-i18n="nav.sepKnowledge">知识</div>
+    <a href="#/kg" data-view="kg"><span class="rail-ico">04</span><span data-i18n="nav.kg">知识图谱</span></a>
+    <a href="#/graph" data-view="graph"><span class="rail-ico">05</span><span data-i18n="nav.graph">宫殿导航图</span></a>
+    <div class="rail-sep" data-i18n="nav.sepRun">运行</div>
+    <a href="#/diary" data-view="diary"><span class="rail-ico">06</span><span data-i18n="nav.diary">Diary</span></a>
+    <a href="#/events" data-view="events"><span class="rail-ico">07</span><span data-i18n="nav.events">协调域</span></a>
+    <a href="#/health" data-view="health"><span class="rail-ico">08</span><span data-i18n="nav.health">运维健康</span></a>
+    <div class="rail-sep" data-i18n="nav.sepInsight">洞察</div>
+    <a href="#/audit" data-view="audit"><span class="rail-ico">09</span><span data-i18n="nav.audit">记忆体检</span></a>
+  </nav>
+
+  <main class="main" id="main" tabindex="-1">
+    <section class="view" id="view-overview"></section>
+    <section class="view" id="view-structure"></section>
+    <section class="view" id="view-search"></section>
+    <section class="view" id="view-kg"></section>
+    <section class="view" id="view-graph"></section>
+    <section class="view" id="view-diary"></section>
+    <section class="view" id="view-events"></section>
+    <section class="view" id="view-health"></section>
+    <section class="view" id="view-audit"></section>
+  </main>
+
+  <aside class="drawer-panel" id="drawer-panel" aria-hidden="true" role="region" aria-label="抽屉详情面板" data-i18n-aria="drawer.aria">
+    <div class="drawer-head">
+      <strong id="drawer-title" class="mono">drawer</strong>
+      <button id="drawer-close" aria-label="关闭详情面板" data-i18n="drawer.close" data-i18n-aria="drawer.closeAria">关闭</button>
+    </div>
+    <div class="drawer-body" id="drawer-body"></div>
+  </aside>
+
+  <script src="/web/vendor/echarts.min.js"></script>
+  <script type="module" src="/web/js/app.js"></script>
+</body>
+</html>

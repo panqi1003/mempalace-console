@@ -1,0 +1,129 @@
+/* ============================================================
+   MemPalace 可视化管理台 · 设计 Token（三层：primitive → semantic → component）
+   Hallmark · page: console(workbench) · genre: technical/atmospheric · theme: Ink Console
+   Hallmark · pre-emit critique: P4 H5 E4 S5 R4 V4
+   纪律：组件层禁止出现裸色值/裸字体；全部引用 var(--*)。
+   字体：离线零 webfont——mono 展示 + 系统 CJK 正文（工具界面以密度与层级取胜）。
+   ============================================================ */
+
+:root {
+  /* ---------- Primitive ---------- */
+  /* 中性阶（深蓝黑 console） */
+  --ink-950: #070a0f;
+  --ink-900: #0b0f14;
+  --ink-850: #10151c;
+  --ink-800: #141a23;
+  --ink-700: #1a222d;
+  --ink-600: #222c3a;
+  --ink-500: #2b3646;
+  --ink-400: #3a4658;
+  --ink-300: #55637a;
+  --ink-200: #7a879c;
+  --ink-100: #9aa6b8;
+  --ink-050: #c3ccd9;
+  --ink-000: #e6ebf2;
+
+  /* 强调（青磷色，单一强调） */
+  --teal-500: #14b8a6;
+  --teal-400: #2dd4bf;
+  --teal-300: #5eead4;
+
+  /* 语义原色 */
+  --green-400: #34d399;
+  --amber-400: #fbbf24;
+  --red-400: #f87171;
+  --sky-400: #7dd3fc;
+  --violet-400: #a78bfa;
+  --rose-400: #fb7185;
+
+  /* ---------- Semantic ---------- */
+  --bg: var(--ink-900);
+  --bg-deep: var(--ink-950);
+  --surface: var(--ink-850);
+  --surface-2: var(--ink-800);
+  --surface-3: var(--ink-700);
+  --border: var(--ink-600);
+  --border-strong: var(--ink-500);
+
+  --fg: var(--ink-000);
+  --fg-mid: var(--ink-100);
+  --fg-low: var(--ink-200);
+  --fg-faint: var(--ink-200);
+
+  --accent: var(--teal-400);
+  --accent-strong: var(--teal-500);
+  --accent-soft: var(--teal-300);
+  --accent-bg: rgba(45, 212, 191, 0.10);
+  --accent-border: rgba(45, 212, 191, 0.35);
+
+  --ok: var(--green-400);
+  --warn: var(--amber-400);
+  --err: var(--red-400);
+  --info: var(--sky-400);
+
+  --ok-bg: rgba(52, 211, 153, 0.12);
+  --warn-bg: rgba(251, 191, 36, 0.12);
+  --err-bg: rgba(248, 113, 113, 0.12);
+
+  /* 图表 wing 分色（5 色板，按 wing 名哈希分配，不依赖具体项目） */
+  --wing-1: var(--sky-400);
+  --wing-2: var(--teal-400);
+  --wing-3: var(--violet-400);
+  --wing-4: var(--amber-400);
+  --wing-5: var(--rose-400);
+  --wing-unknown: var(--ink-400);
+
+  /* 字体 */
+  --font-mono: "JetBrains Mono", "Cascadia Code", "SFMono-Regular", Consolas,
+    "Liberation Mono", Menlo, monospace;
+  --font-ui: -apple-system, "Segoe UI", "PingFang SC", "Hiragino Sans GB",
+    "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+
+  /* 字号阶梯（1.25 比率的工具界面裁剪） */
+  --fs-2xs: 11px;
+  --fs-xs: 12px;
+  --fs-sm: 13px;
+  --fs-md: 14px;
+  --fs-lg: 16px;
+  --fs-xl: 20px;
+  --fs-2xl: 26px;
+  --fs-3xl: 34px;
+
+  /* 间距（4pt 尺度） */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-8: 32px;
+  --sp-10: 40px;
+
+  /* 圆角与阴影 */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --shadow-panel: 0 1px 3px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.35);
+  --shadow-pop: 0 12px 48px rgba(0, 0, 0, 0.55);
+
+  /* 动效 */
+  --dur-fast: 120ms;
+  --dur: 200ms;
+  --dur-slow: 320ms;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* ---------- Component ---------- */
+  --topbar-h: 52px;
+  --rail-w: 216px;
+  --card-bg: var(--surface);
+  --card-border: var(--border);
+  --card-radius: var(--radius-lg);
+  --row-hover: var(--surface-2);
+  --panel-bg: var(--surface-2);
+  --focus-ring: 0 0 0 2px var(--bg), 0 0 0 4px var(--accent-border);
+  --code-bg: var(--ink-950);
+  --chip-bg: var(--surface-3);
+  --dot-ok: var(--ok);
+  --dot-warn: var(--warn);
+  --dot-err: var(--err);
+}
