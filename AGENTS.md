@@ -4,13 +4,14 @@
 
 ## 项目是什么
 
-MemPalace 本地记忆宫殿的**只读**可视化管理台：FastAPI 后端 + 原生前端（无构建链），15 个 `/api/*` 只读端点，9 个视图（总览/结构/搜索/KG/导航图/Diary/协调域/运维/记忆体检）。
+MemPalace 本地记忆宫殿的**只读**可视化管理台：FastAPI 后端 + 原生前端（无构建链），21 个 `/api/*` 只读端点，9 个视图（总览/结构/搜索/KG/导航图/Diary/协调域/运维/记忆体检）。
 
 **只读红线（不可破坏）**：不得新增任何写工具调用（delete/update/mine/sweep/sync/compress/diary_write 等）。只读工具白名单在 `server/config.py` 的 `READONLY_TOOLS`。
 
 ## 前置检查（先做，不要跳过）
 
 ```bash
+python --version          # 0) Python 3.10+（3.13 已验证）
 mempalace status          # 1) mempalace CLI 是否可用（不在 PATH 时见"可选配置"）
 mempalace --version       # 2) 版本（>=3.7 即可，3.10 已验证）
 ```
@@ -58,7 +59,7 @@ python3 -m venv .venv
 # 验证 1：接口连通（另开终端）
 curl -s http://127.0.0.1:8766/api/overview     # 期望：含 "total_drawers" 的 JSON
 
-# 验证 2：单元测试（35+ 全绿）
+# 验证 2：单元测试全绿（当前 51 项）
 .venv\Scripts\python.exe -m pytest             # Windows
 .venv/bin/python -m pytest                     # mac/Linux
 
@@ -76,7 +77,7 @@ curl -s http://127.0.0.1:8766/api/overview     # 期望：含 "total_drawers" �
 ## 常见问题
 
 - **界面语言**：默认按浏览器语言判定——含中文（zh*）显示中文，其余（含识别不到）显示英文；右上角「中文 / EN」可手动切换并记住（localStorage `mempalace_viz_lang`）。后端少量用户可见文案随请求头 `Accept-Language` 切换（缺省中文）。给非中文用户部署时无需任何配置。
-- **页面提示 "palace unreachable"**：mempalace CLI 找不到或宫殿路径不对 → 检查前置检查两条，必要时写 `mempalace_exe` / `palace`。
+- **页面提示 "palace unreachable"**：mempalace CLI 找不到或宫殿路径不对 → 检查前置检查步骤（Python 版本 / CLI 可用性 / 版本），必要时写 `mempalace_exe` / `palace`。
 - **hub 卡片显示 hub=fail 但其它正常**：hub 未运行属正常（3.10 的 hub 空闲 8 小时会自退），工具自动降级 stdio，仅首次查语义类请求稍慢。不必强行为用户启动 hub。
 - **备份卡片为空**：MemPalace 不做定期备份，只有运行 `mempalace repair` / `migrate` 时才生成备份。可视化会自动发现官方位置（宫殿旁的 `<palace>.backup` 目录、宫殿内的 `chroma.sqlite3.max-seq-id-backup-*` 文件）；用户自有备份目录可在 `mempalace_viz.json` 里用 `backup_dir` 指定。
 - **hub.log 卡片不出现**：这是可选功能（仅当用户自建了把日志落盘的本地 hub 时才需要），未配置 `hub_log` 时相关卡片自动隐藏，属正常。
