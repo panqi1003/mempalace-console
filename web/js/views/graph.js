@@ -162,19 +162,34 @@ async function render(container) {
     itemStyle: { color: cssColor(wingColor(w)) },
   }));
   const topTunnels = stats.top_tunnels || [];
-  const gEdges = topTunnels
-    .filter((t) => Array.isArray(t.wings) && t.wings.length >= 2)
-    .map((t) => ({
-      source: t.wings[0],
-      target: t.wings[1],
-      roomName: t.room || "",
-      count: t.count || 0,
-      lineStyle: {
-        width: Math.max(1, Math.min(8, (t.count || 0) / 4)),
-        color: cssColor("var(--ink-400)"),
-        opacity: 0.7,
-      },
-    }));
+  const pairEdges = new Map();
+  for (const t of topTunnels) {
+    const wings = (Array.isArray(t.wings) ? t.wings : [])
+      .filter(Boolean)
+      .map(String)
+      .sort();
+    for (let i = 0; i < wings.length; i += 1) {
+      for (let j = i + 1; j < wings.length; j += 1) {
+        const key = `${wings[i]}\u0000${wings[j]}`;
+        let edge = pairEdges.get(key);
+        if (!edge) {
+          edge = { source: wings[i], target: wings[j], rooms: [] };
+          pairEdges.set(key, edge);
+        }
+        edge.rooms.push(t.room || "?");
+      }
+    }
+  }
+  const gEdges = [...pairEdges.values()].map((e) => ({
+    source: e.source,
+    target: e.target,
+    rooms: e.rooms,
+    lineStyle: {
+      width: Math.max(1.5, Math.min(8, e.rooms.length * 2)),
+      color: cssColor("var(--ink-400)"),
+      opacity: 0.7,
+    },
+  }));
   const chartDom = container.querySelector("#g-chart");
   if (chart && !chart.isDisposed()) chart.dispose();
   chart = echarts.init(chartDom);
@@ -184,7 +199,11 @@ async function render(container) {
       formatter: (p) => {
         if (p.dataType === "edge") {
           const d = p.data || {};
-          return `${esc(String(d.source))} ↔ ${esc(String(d.target))}<br>${t("gr.tooltipShared", { room: esc(String(d.roomName || "?")) })}`;
+          const rooms = Array.isArray(d.rooms) ? d.rooms : [];
+          return `${esc(String(d.source))} ↔ ${esc(String(d.target))}<br>${t("gr.tooltipShared", {
+            n: rooms.length,
+            rooms: esc(rooms.join("、")),
+          })}`;
         }
         return t("gr.tooltipRooms", { wing: esc(String(p.name ?? "")), n: esc(String(p.value ?? "")) });
       },

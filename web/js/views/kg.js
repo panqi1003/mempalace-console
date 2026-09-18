@@ -22,7 +22,7 @@ function factsList(facts) {
         <td class="mono" style="font-size:12px">${esc(f.predicate || "")}</td>
         <td>${esc(f.object || "")}</td>
         <td>${f.current ? chip(t("kg.chipCurrent"), "is-ok") : chip(t("kg.chipExpired"), "is-err")}</td>
-        <td class="mono muted" style="font-size:11px">${timeShort(f.valid_from)}</td>
+        <td class="mono muted" style="font-size:11px">${f.valid_from ? timeShort(f.valid_from) : "—"}</td>
       </tr>`
       )
       .join("")}
@@ -108,7 +108,7 @@ async function render(container) {
     <div class="grid grid-3">
       <div class="card"><div class="stat-num" id="kg-entities">…</div><div class="stat-label">${t("kg.statEntities")}</div></div>
       <div class="card"><div class="stat-num" id="kg-triples">…</div><div class="stat-label">${t("kg.statTriples")}</div></div>
-      <div class="card"><div class="stat-num" id="kg-current">…</div><div class="stat-label">${t("kg.statCurrent")}</div></div>
+      <div class="card"><div class="stat-num" id="kg-current">…</div><div class="stat-label">${t("kg.statCurrent")}</div><div id="kg-expired-line" class="muted" style="font-size:11px"></div></div>
     </div>
     <div class="grid grid-2 mt-4">
       <div class="card"><h3 class="card-title">${t("kg.chart")}</h3>
@@ -126,18 +126,19 @@ async function render(container) {
   const stats = (await api("/api/kg/stats")).data || {};
   container.querySelector("#kg-entities").textContent = num(stats.entities);
   container.querySelector("#kg-triples").textContent = num(stats.triples);
-  const cur = container.querySelector("#kg-current");
-  cur.textContent = num(stats.current_facts);
+  container.querySelector("#kg-current").textContent = num(stats.current_facts);
   if (stats.expired_facts > 0) {
-    cur.insertAdjacentHTML(
-      "afterend",
-      `<div class="muted" style="font-size:11px">${t("kg.expired", { n: num(stats.expired_facts) })}</div>`
-    );
+    container.querySelector("#kg-expired-line").textContent = t("kg.expired", {
+      n: num(stats.expired_facts),
+    });
   }
 
   const tl = (await api("/api/kg/timeline")).data || {};
   const facts = tl.timeline || tl.facts || tl.results || [];
-  container.querySelector("#kg-timeline").innerHTML = factsList(facts.slice(0, 100));
+  const sortedFacts = [...facts].sort((a, b) =>
+    String(b.valid_from || "").localeCompare(String(a.valid_from || ""))
+  );
+  container.querySelector("#kg-timeline").innerHTML = factsList(sortedFacts.slice(0, 100));
   container.querySelectorAll("#kg-timeline .kg-entity").forEach((td) => {
     const entity = td.textContent.trim();
     if (entity && entity !== "—") {
