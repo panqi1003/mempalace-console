@@ -125,20 +125,21 @@ export async function openDrawerById(drawerId) {
   }
 }
 
-/* 三通道停写警报（供总览与体检共用） */
+/* 三通道静默提醒（供总览与体检共用）：列出全部 ≥3 天无新条目的通道 */
 export function stallAlerts(lastByRoom) {
-  const rows = [];
+  const items = [];
   for (const room of ["diary", "lessons", "decisions"]) {
     const last = lastByRoom?.[room];
     const days = daysSince(last);
-    if (!last || days === null) {
+    if (!last || days === null || days < 3) {
       continue;
     }
-    if (days >= 3) {
-      return `<div class="alert is-warn">${t("sh.stall", { room, days, last: esc(last) })}</div>`;
-    }
+    items.push(t("sh.stallItem", { room, days, last: timeShort(last) }));
   }
-  return "";
+  if (!items.length) {
+    return "";
+  }
+  return `<div class="alert is-warn">${t("sh.stall", { items: items.join(" · ") })}</div>`;
 }
 
 /* 本地日期串（避免 toISOString 的 UTC 偏移：filed_at 为本地时间） */

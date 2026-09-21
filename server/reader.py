@@ -460,17 +460,23 @@ class ReadOnlyReader:
         start_day = str(date.today() - timedelta(days=days))
         per_day: dict = {}
         last_by_room: dict = {}
+        by_wing: dict = {}
+        by_room: dict = {}
+        scan_total = 0
         for d in self._page_drawers():
+            scan_total += 1
+            wing = d.get("wing") or "unknown"
+            by_wing[wing] = by_wing.get(wing, 0) + 1
+            room = d.get("room") or (d.get("metadata") or {}).get("room") or "unknown"
+            by_room[room] = by_room.get(room, 0) + 1
             filed = ((d.get("metadata") or {}).get("filed_at")) or d.get("filed_at")
             if not filed:
                 continue
             day = str(filed)[:10]
             if day < start_day:
                 continue
-            wing = d.get("wing") or "unknown"
             per_day.setdefault(day, {}).setdefault(wing, 0)
             per_day[day][wing] += 1
-            room = d.get("room") or (d.get("metadata") or {}).get("room")
             if room in ("diary", "lessons", "decisions"):
                 prev = last_by_room.get(room)
                 if not prev or str(filed) > prev:
@@ -479,6 +485,9 @@ class ReadOnlyReader:
             "days": days,
             "per_day": {k: dict(v) for k, v in sorted(per_day.items())},
             "last_by_room": last_by_room,
+            "scan_total": scan_total,
+            "by_wing": by_wing,
+            "by_room": by_room,
         }
 
     def audit(self, sample_size=5):

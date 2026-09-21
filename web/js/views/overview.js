@@ -51,13 +51,19 @@ async function render(container) {
   ]);
   const s = statusBody.data || {};
   const activity = activityBody.data || {};
-  const wings = s.wings || {};
-  const rooms = s.rooms || {};
+  const physicalTotal = s.total_drawers;
+  const totalDrawers = activity.scan_total ?? physicalTotal;
+  const wings = activity.by_wing || s.wings || {};
+  const rooms = activity.by_room || s.rooms || {};
   const wingCount = Object.keys(wings).length;
   const roomCount = Object.keys(rooms).length;
   const integrity = integrityInfo(s.sqlite_integrity);
   const serving = (s.library_versions && s.library_versions.serving) || {};
   const lastByRoom = activity.last_by_room || {};
+  const drawersSub =
+    physicalTotal && totalDrawers && physicalTotal !== totalDrawers
+      ? t("ov.statDrawersSubMerged", { n: num(physicalTotal) })
+      : t("ov.statDrawersSub");
 
   const stall = stallAlerts(lastByRoom);
 
@@ -65,7 +71,7 @@ async function render(container) {
     ${viewHead(t("ov.title"), t("ov.sub"))}
     ${stall}
     <div class="grid grid-4">
-      ${statCard(num(s.total_drawers), t("ov.statDrawers"), t("ov.statDrawersSub"))}
+      ${statCard(num(totalDrawers), t("ov.statDrawers"), drawersSub)}
       ${statCard(wingCount, t("ov.statWings"), t("ov.statWingsSub"))}
       ${statCard(roomCount, t("ov.statRooms"), t("ov.statRoomsSub"))}
       ${statCard(integrity.value, t("ov.statIntegrity"), integrity.sub)}

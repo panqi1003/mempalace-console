@@ -51,6 +51,7 @@ const DICT = {
     "ov.integrityErrors": "{n} 错误",
     "ov.statDrawers": "drawers 总数",
     "ov.statDrawersSub": "记忆抽屉",
+    "ov.statDrawersSubMerged": "记忆抽屉（已合并分块行；status 行数 {n}）",
     "ov.statWings": "wings",
     "ov.statWingsSub": "项目分区",
     "ov.statRooms": "rooms",
@@ -254,7 +255,8 @@ const DICT = {
     "au.reportLine2": "- unknown wing {a} · 缺 wing {b} · mined 缺源 {c} · 精选缺源 {d}",
     "au.reportLine3": "- 空内容 {a} · 精确重复对 {b} · 语义抽样命中 {c}",
     "au.reportLine4": "- 数据构成 {json}",
-    "sh.stall": "{room} 已 {days} 天无写入（最后 {last}）——记忆写入可能已停摆",
+    "sh.stall": "记忆通道静默（超过 3 天无新条目）：{items}",
+    "sh.stallItem": "{room} 已 {days} 天没有新条目（最后 {last}）",
   },
   en: {
     "app.title": "MemPalace Console",
@@ -300,6 +302,7 @@ const DICT = {
     "ov.integrityErrors": "{n} errors",
     "ov.statDrawers": "Drawers",
     "ov.statDrawersSub": "in memory",
+    "ov.statDrawersSubMerged": "in memory (chunk rows merged; status rows {n})",
     "ov.statWings": "Wings",
     "ov.statWingsSub": "project partitions",
     "ov.statRooms": "Rooms",
@@ -503,7 +506,8 @@ const DICT = {
     "au.reportLine2": "- unknown wing {a} · missing wing {b} · mined missing source {c} · curated missing source {d}",
     "au.reportLine3": "- Empty content {a} · exact duplicate pairs {b} · semantic sample hits {c}",
     "au.reportLine4": "- Composition {json}",
-    "sh.stall": "No writes to {room} for {days} days (last {last}) — memory writes may have stalled",
+    "sh.stall": "Quiet memory channels (no new entries for 3+ days): {items}",
+    "sh.stallItem": "{room}: no new entries for {days} days (last {last})",
   },
 };
 

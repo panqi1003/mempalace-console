@@ -292,3 +292,33 @@ def test_palace_size_handles_sqlite_exact_backend(tmp_path, monkeypatch):
     out = r.palace_size()
     assert out["size_bytes"] == 9
     assert out["path"].endswith("sqlite_exact.sqlite3")
+
+
+def test_activity_returns_logical_scan_totals():
+    """activity 顺带返回逻辑条目总数与 wing/room 分布（总览统一口径用）。
+
+    逻辑条目 = list_drawers 折叠分块后的条数；含窗口外与无日期条目。
+    """
+    from datetime import date, timedelta
+
+    recent = (date.today() - timedelta(days=1)).isoformat()
+    old = (date.today() - timedelta(days=40)).isoformat()
+    pages = [
+        {"wing": "w1", "room": "diary", "metadata": {"filed_at": f"{recent}T10:00:00"}},
+        {"wing": "w1", "room": "lessons", "metadata": {"filed_at": f"{recent}T11:00:00"}},
+        {"wing": "w2", "room": "diary", "metadata": {"filed_at": f"{old}T10:00:00"}},
+        {"wing": None, "room": None, "metadata": {}},
+    ]
+
+    def hub(tool, args):
+        if tool != "mempalace_list_drawers":
+            return {"tool": tool}
+        if args.get("offset", 0) == 0:
+            return {"drawers": pages, "total": 4}
+        return {"drawers": [], "total": 4}
+
+    r = ReadOnlyReader(transports={"hub": hub})
+    out = r.activity(days=7)
+    assert out["scan_total"] == 4
+    assert out["by_wing"] == {"w1": 2, "w2": 1, "unknown": 1}
+    assert out["by_room"] == {"diary": 2, "lessons": 1, "unknown": 1}
