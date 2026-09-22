@@ -22,6 +22,17 @@
 | 运维健康 | repair-status、备份自动发现与新鲜度（官方 `.backup` 目录 / `max-seq-id` 备份文件 + 可选自定义目录）、宫殿体积（chroma / sqlite_exact 兼容）；hub.log 卡片为可选配置（未配置时自动隐藏） |
 | **记忆体检** | 一键体检：问题清单（问题/数量/占比/影响→原因→正常项）、30 天写入热力、三通道停写警报、wake-up 注入预览（agent 会话开始实际收到的内容）、数据构成分析、重复/空内容检测、KG 过期占比、检索质量自测 |
 
+## 界面预览
+
+> 截图基于**全演示数据**（虚构内容）生成，不包含任何真实记忆。
+
+| | |
+|---|---|
+| **总览**<br>![总览](assets/screenshots/01-overview.png) | **结构浏览**<br>![结构浏览](assets/screenshots/02-structure.png) |
+| **语义搜索 + 抽屉详情**<br>![语义搜索](assets/screenshots/03-search-drawer.png) | **知识图谱**<br>![知识图谱](assets/screenshots/04-knowledge-graph.png) |
+| **宫殿导航图**<br>![宫殿导航图](assets/screenshots/05-palace-map.png) | **Diary**<br>![Diary](assets/screenshots/06-diary.png) |
+| **记忆体检**<br>![记忆体检](assets/screenshots/07-audit.png) | |
+
 ## 快速开始
 
 ```bash
