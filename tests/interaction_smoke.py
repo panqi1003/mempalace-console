@@ -295,6 +295,23 @@ async def main() -> int:
         except Exception as e:
             fail("KG 画布/间距", str(e)[:140])
 
+        # --- 6f. KG 布局：实体事实卡应紧邻图谱卡正下方（就近展示点击结果） ---
+        try:
+            order = await page.evaluate(
+                """() => {
+                    const chart = document.querySelector('#kg-chart');
+                    const facts = document.querySelector('#kg-facts-card');
+                    if (!chart || !facts) return { err: 'missing nodes' };
+                    const chartCard = chart.closest('.card');
+                    const prev = facts.previousElementSibling;
+                    return { after: prev === chartCard, prevId: (prev && prev.id) || '(none)' };
+                }"""
+            )
+            assert order.get("after"), f"实体事实卡未紧邻图谱卡: {order}"
+            ok("KG 布局：实体事实卡紧邻图谱正下方")
+        except Exception as e:
+            fail("KG 布局顺序", str(e)[:140])
+
         # --- 6b. 宫殿导航图：traverse（下拉选房 + 数组渲染回归） ---
         await goto("graph")
         try:

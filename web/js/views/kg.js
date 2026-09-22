@@ -155,13 +155,13 @@ async function render(container) {
       <h3 class="card-title">${t("kg.chart")}</h3>
       <div id="kg-chart" style="height:620px"></div>
     </div>
-    <div class="card mt-4">
-      <h3 class="card-title">${t("kg.timeline")}</h3>
-      <div id="kg-timeline" style="max-height:420px;overflow-y:auto"></div>
-    </div>
     <div class="card mt-4" id="kg-facts-card">
       <h3 class="card-title">${t("kg.factsCard")}</h3>
       <div id="kg-facts"><div class="muted" style="font-size:13px">${t("kg.noEntity")}</div></div>
+    </div>
+    <div class="card mt-4">
+      <h3 class="card-title">${t("kg.timeline")}</h3>
+      <div id="kg-timeline" style="max-height:420px;overflow-y:auto"></div>
     </div>`;
 
   const stats = (await api("/api/kg/stats")).data || {};
