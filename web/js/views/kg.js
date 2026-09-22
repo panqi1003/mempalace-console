@@ -151,6 +151,61 @@ async function render(container) {
   if (chart && !chart.isDisposed()) chart.dispose();
   chart = echarts.init(chartDom);
   chart.setOption(graphOption(facts.slice(0, 300)));
+
+  /* 自动适配全貌：轮询到布局稳定后把全部节点+关系连线框进画布（只适配一次，不覆盖手动缩放） */
+  const c = chart;
+  let fitted = false;
+  let prevKey = "";
+  let stable = 0;
+  let ticks = 0;
+  const fitTimer = setInterval(() => {
+    if (fitted || c.isDisposed()) {
+      clearInterval(fitTimer);
+      return;
+    }
+    ticks += 1;
+    try {
+      const data = c.getModel().getSeriesByIndex(0).getData();
+      let minX = Infinity;
+      let maxX = -Infinity;
+      let minY = Infinity;
+      let maxY = -Infinity;
+      for (let i = 0; i < data.count(); i += 1) {
+        const layout = data.getItemLayout(i);
+        if (!layout) continue;
+        if (layout[0] < minX) minX = layout[0];
+        if (layout[0] > maxX) maxX = layout[0];
+        if (layout[1] < minY) minY = layout[1];
+        if (layout[1] > maxY) maxY = layout[1];
+      }
+      if (!Number.isFinite(minX)) return;
+      const key = `${Math.round(minX)},${Math.round(maxX)},${Math.round(minY)},${Math.round(maxY)}`;
+      if (key === prevKey) stable += 1;
+      else stable = 0;
+      prevKey = key;
+      const settled = stable >= 1; /* 连续两次采样（700ms 间隔）布局不动 = 稳定 */
+      const timedOut = ticks >= 20; /* 10s 兜底 */
+      if (!settled && !timedOut) return;
+      fitted = true;
+      clearInterval(fitTimer);
+      const cw = c.getWidth();
+      const ch = c.getHeight();
+      const pad = 100;
+      const zoom = Math.min(
+        1,
+        (cw - pad) / Math.max(1, maxX - minX),
+        (ch - pad) / Math.max(1, maxY - minY)
+      );
+      if (zoom >= 0.999) return;
+      c.setOption({
+        series: [{ zoom, center: [(minX + maxX) / 2, (minY + maxY) / 2] }],
+      });
+    } catch {
+      /* 内部 API 不可用则放弃适配，不影响页面 */
+      fitted = true;
+      clearInterval(fitTimer);
+    }
+  }, 700);
   chart.on("click", (p) => {
     if (p.componentType !== "series" || p.dataType !== "node" || !p.name) return;
     void loadFacts(p.name);

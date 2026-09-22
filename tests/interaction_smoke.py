@@ -128,7 +128,7 @@ async def main() -> int:
         except Exception as e:
             fail("结构页翻页", str(e))
 
-        # --- 6. KG 时间线：点实体 → 事实表出现 ---
+        # --- 6. KG 时间线：点实体 → 事实表出现 + 图谱自动适配全貌 ---
         await goto("kg")
         try:
             ent = page.locator("#kg-timeline .kg-entity").first
@@ -136,9 +136,33 @@ async def main() -> int:
             await page.wait_for_timeout(2000)
             facts = page.locator("#kg-facts table")
             assert await facts.count() > 0, "facts 表未渲染"
-            ok("KG 时间线→实体事实")
+            fit = {"outside": -1, "nodes": 0}
+            for _ in range(12):  # 轮询等自动适配生效（布局稳定+适配约需数秒）
+                fit = await page.evaluate(
+                    """() => {
+                        const inst = window.echarts && window.echarts.getInstanceByDom(
+                            document.querySelector('#kg-chart'));
+                        if (!inst) return { outside: -1, nodes: 0 };
+                        const d = inst.getModel().getSeriesByIndex(0).getData();
+                        const cw = inst.getWidth(), ch = inst.getHeight();
+                        let out = 0;
+                        for (let i = 0; i < d.count(); i++) {
+                            const l = d.getItemLayout(i);
+                            if (!l) continue;
+                            const p = inst.convertToPixel({ seriesIndex: 0 }, [l[0], l[1]]);
+                            if (!p) continue;
+                            if (p[0] < -3 || p[0] > cw + 3 || p[1] < -3 || p[1] > ch + 3) out += 1;
+                        }
+                        return { outside: out, nodes: d.count() };
+                    }"""
+                )
+                if fit.get("outside") == 0:
+                    break
+                await page.wait_for_timeout(1000)
+            assert fit.get("outside") == 0, f"图谱未适配全貌: {fit} 有节点渲染在画布外"
+            ok(f"KG 时间线→实体事实 + 全貌适配（{fit['nodes']} 节点全部渲染在画布内）")
         except Exception as e:
-            fail("KG 实体事实", str(e))
+            fail("KG 实体事实", str(e)[:140])
 
         # --- 6b. 宫殿导航图：traverse（下拉选房 + 数组渲染回归） ---
         await goto("graph")
