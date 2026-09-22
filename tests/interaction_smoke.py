@@ -161,6 +161,35 @@ async def main() -> int:
                 await page.wait_for_timeout(1000)
             assert fit.get("outside") == 0, f"图谱未适配全貌: {fit} 有节点渲染在画布外"
             ok(f"KG 时间线→实体事实 + 全貌适配（{fit['nodes']} 节点全部渲染在画布内）")
+            mm = await page.evaluate(
+                """async () => {
+                    const inst = window.echarts && window.echarts.getInstanceByDom(
+                        document.querySelector('#kg-chart'));
+                    if (!inst) return { rendered: -1, expected: -1 };
+                    const links = inst.getOption().series[0].links || [];
+                    const rendered = links.filter(l => l.mention).length;
+                    const tl = await (await fetch('/api/kg/timeline')).json();
+                    const facts = Array.isArray(tl.data) ? tl.data
+                        : (tl.data.timeline || tl.data.facts || []);
+                    const subjects = new Set(facts.map(f => f.subject).filter(Boolean));
+                    const pairs = new Set();
+                    const escRe = (s) => s.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&');
+                    for (const f of facts) {
+                        const text = String(f.object || '');
+                        if (!f.subject || text.length < 10) continue;
+                        for (const ent of subjects) {
+                            if (ent === f.subject || ent === text.trim() || ent.length < 5) continue;
+                            const re = new RegExp(`(?<![A-Za-z0-9_])${escRe(ent)}(?![A-Za-z0-9_])`, 'i');
+                            if (re.test(text)) pairs.add(`${f.subject} ${ent}`);
+                        }
+                    }
+                    return { rendered, expected: pairs.size };
+                }"""
+            )
+            assert mm["rendered"] == mm["expected"], (
+                f"提及边不一致: 渲染 {mm['rendered']} vs 期望 {mm['expected']}"
+            )
+            ok(f"KG 提及边与数据一致（{mm['rendered']} 条虚线提及边）")
         except Exception as e:
             fail("KG 实体事实", str(e)[:140])
 

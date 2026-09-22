@@ -70,13 +70,49 @@ function graphOption(facts) {
       },
     });
   }
+
+  /* 提及边：事实文本中字面出现的其他实体（词边界、按对去重；虚线与实线事实边区分） */
+  const subjects = new Set(
+    facts.map((x) => String(x.subject || "").trim()).filter(Boolean)
+  );
+  const seenMention = new Set();
+  const escRe = (v) => v.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  for (const f of facts) {
+    const s = String(f.subject || "").trim();
+    const o = String(f.object || "").trim();
+    if (!s || o.length < 10) continue;
+    for (const ent of subjects) {
+      if (ent === s || ent === o || ent.length < 5) continue;
+      const re = new RegExp(
+        `(?<![A-Za-z0-9_])${escRe(ent)}(?![A-Za-z0-9_])`, "i"
+      );
+      if (!re.test(o)) continue;
+      const key = `${s}\u0000${ent}`;
+      if (seenMention.has(key)) continue;
+      seenMention.add(key);
+      edges.push({
+        source: s,
+        target: ent,
+        mention: true,
+        snippet: o.slice(0, 160),
+        lineStyle: { color: inkFaint, opacity: 0.35, width: 1, type: "dashed" },
+      });
+    }
+  }
   return {
     backgroundColor: "transparent",
     tooltip: {
-      formatter: (p) =>
-        p.dataType === "edge"
-          ? `${esc(String(p.data.source))} → ${esc(String(p.data.target))}`
-          : esc(String(p.name ?? "")),
+      formatter: (p) => {
+        if (p.dataType !== "edge") return esc(String(p.name ?? ""));
+        const d = p.data;
+        if (d.mention) {
+          return `${t("kg.mentionEdge", {
+            from: esc(String(d.source)),
+            to: esc(String(d.target)),
+          })}<br><span style="font-size:11px;opacity:.75">${esc(String(d.snippet || ""))}…</span>`;
+        }
+        return `${esc(String(d.source))} → ${esc(String(d.target))}`;
+      },
     },
     series: [
       {
