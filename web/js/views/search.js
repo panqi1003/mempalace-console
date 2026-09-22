@@ -15,9 +15,13 @@ function hitHtml(h) {
       <div class="row" style="gap:6px;margin-bottom:4px">
         <span class="chip">${esc(h.wing || "?")}</span>
         <span class="chip">${esc(h.room || "?")}</span>
-        <span class="chip" style="max-width:260px;overflow:hidden;text-overflow:ellipsis" title="${esc(
-          source
-        )}">${esc(source.split(/[\\/]/).pop() || "-")}</span>
+        ${
+          source && source !== "?" && source !== "-"
+            ? `<span class="chip" style="max-width:260px;overflow:hidden;text-overflow:ellipsis" title="${esc(
+                source
+              )}">${esc(source.split(/[\\/]/).pop())}</span>`
+            : ""
+        }
         <span class="mono muted" style="font-size:11px">${esc(
           String(md.filed_at || "").slice(0, 10)
         )}</span>

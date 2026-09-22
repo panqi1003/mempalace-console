@@ -705,3 +705,12 @@ table.tbl tr:hover td {
 .grow {
   flex: 1;
 }
+.diary-preset.is-active {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.diary-more {
+  display: block;
+  width: 100%;
+  margin-top: var(--sp-3);
+}

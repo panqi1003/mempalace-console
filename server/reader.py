@@ -490,6 +490,20 @@ class ReadOnlyReader:
             "by_room": by_room,
         }
 
+    def diary_agents(self):
+        """diary 条目按 metadata.agent 聚合（预设 chips 的真实 agent 口径，数量降序）。"""
+        counts: dict = {}
+        for d in self._page_drawers():
+            room = d.get("room") or (d.get("metadata") or {}).get("room")
+            if room != "diary":
+                continue
+            agent = (d.get("metadata") or {}).get("agent") or d.get("agent")
+            if not agent:
+                continue
+            counts[agent] = counts.get(agent, 0) + 1
+        ordered = sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))
+        return [name for name, _ in ordered[:12]]
+
     def audit(self, sample_size=5):
         """全量元数据扫描。mined 内容缺 source_file 属真问题；精选条目缺源属正常。"""
         import time as _time
@@ -507,6 +521,7 @@ class ReadOnlyReader:
             "unknown_wing": 0,
             "empty_preview": 0,
             "by_ingest": {},
+            "by_type": {},
             "dup_exact_pairs": 0,
             "dup_semantic_sample": [],
             "issue_samples": {
@@ -538,6 +553,7 @@ class ReadOnlyReader:
             src = md.get("source_file") or d.get("source_file")
             preview = (d.get("content_preview") or "").strip()
             ingest = md.get("ingest_mode") or "unknown"
+            dtype = md.get("type") or "unknown"
             if not wing:
                 stats["no_wing"] += 1
                 _sample("no_wing", drawer_id)
@@ -557,6 +573,7 @@ class ReadOnlyReader:
                 stats["empty_preview"] += 1
                 _sample("empty_preview", drawer_id)
             stats["by_ingest"][ingest] = stats["by_ingest"].get(ingest, 0) + 1
+            stats["by_type"][dtype] = stats["by_type"].get(dtype, 0) + 1
             if preview:
                 key = preview[:200]
                 if key in seen:
@@ -584,6 +601,13 @@ class ReadOnlyReader:
                             )
                     except ReaderToolError:
                         pass
+        known_ingest = sum(
+            v for k, v in stats["by_ingest"].items() if k and k != "unknown"
+        )
+        stats["composition"] = {
+            "field": "ingest_mode" if known_ingest else "type",
+            "counts": stats["by_ingest"] if known_ingest else stats["by_type"],
+        }
         stats["elapsed_s"] = round(_time.monotonic() - t0, 1)
         return stats
 

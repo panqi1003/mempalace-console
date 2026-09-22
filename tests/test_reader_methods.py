@@ -322,3 +322,78 @@ def test_activity_returns_logical_scan_totals():
     assert out["scan_total"] == 4
     assert out["by_wing"] == {"w1": 2, "w2": 1, "unknown": 1}
     assert out["by_room"] == {"diary": 2, "lessons": 1, "unknown": 1}
+
+
+def test_diary_agents_from_diary_metadata():
+    """diary 预设按条目 metadata.agent 聚合（真实 agent_name 口径，数量降序）。"""
+    pages = [
+        {"room": "diary", "metadata": {"agent": "opencode"}},
+        {"room": "diary", "metadata": {"agent": "opencode"}},
+        {"room": "diary", "metadata": {"agent": "kilo"}},
+        {"room": "lessons", "metadata": {"agent": "checkpoint"}},
+        {"room": "diary", "metadata": {}},
+    ]
+
+    def hub(tool, args):
+        if tool != "mempalace_list_drawers":
+            return {"tool": tool}
+        if args.get("offset", 0) == 0:
+            return {"drawers": pages, "total": 5}
+        return {"drawers": [], "total": 5}
+
+    r = ReadOnlyReader(transports={"hub": hub})
+    assert r.diary_agents() == ["opencode", "kilo"]
+
+
+def _audit_hub(drawers):
+    def hub(tool, args):
+        if tool == "mempalace_list_drawers":
+            if args.get("offset", 0) == 0:
+                return {"drawers": drawers, "total": len(drawers)}
+            return {"drawers": [], "total": len(drawers)}
+        if tool == "mempalace_kg_stats":
+            return {"current_facts": 1, "expired_facts": 0}
+        return {"tool": tool}
+
+    return hub
+
+
+def test_audit_composition_prefers_ingest_mode_when_present():
+    drawers = [
+        {
+            "drawer_id": "a",
+            "wing": "w",
+            "room": "r",
+            "content_preview": "x",
+            "metadata": {"ingest_mode": "manual", "source_file": "f", "type": "diary_entry"},
+        }
+    ]
+    r = ReadOnlyReader(transports={"hub": _audit_hub(drawers)})
+    out = r.audit(sample_size=0)
+    assert out["by_type"] == {"diary_entry": 1}
+    assert out["composition"]["field"] == "ingest_mode"
+    assert out["composition"]["counts"] == {"manual": 1}
+
+
+def test_audit_composition_falls_back_to_type_when_ingest_missing():
+    """3.10 宫殿无 ingest_mode 字段时，构成统计退到 type（当前真实数据形态）。"""
+    drawers = [
+        {
+            "drawer_id": "a",
+            "wing": "w",
+            "room": "r",
+            "content_preview": "x",
+            "metadata": {"type": "diary_entry"},
+        },
+        {
+            "drawer_id": "b",
+            "wing": "w",
+            "room": "r",
+            "content_preview": "y",
+            "metadata": {},
+        },
+    ]
+    r = ReadOnlyReader(transports={"hub": _audit_hub(drawers)})
+    out = r.audit(sample_size=0)
+    assert out["composition"]["field"] == "type"
+    assert out["composition"]["counts"] == {"diary_entry": 1, "unknown": 1}

@@ -60,10 +60,9 @@ async function render(container) {
   const integrity = integrityInfo(s.sqlite_integrity);
   const serving = (s.library_versions && s.library_versions.serving) || {};
   const lastByRoom = activity.last_by_room || {};
-  const drawersSub =
-    physicalTotal && totalDrawers && physicalTotal !== totalDrawers
-      ? t("ov.statDrawersSubMerged", { n: num(physicalTotal) })
-      : t("ov.statDrawersSub");
+  const merged = Boolean(physicalTotal && totalDrawers && physicalTotal !== totalDrawers);
+  const drawersSub = merged ? t("ov.statDrawersSubMerged") : t("ov.statDrawersSub");
+  const drawersTip = merged ? t("ov.statDrawersTip", { n: num(physicalTotal) }) : "";
 
   const stall = stallAlerts(lastByRoom);
 
@@ -71,7 +70,7 @@ async function render(container) {
     ${viewHead(t("ov.title"), t("ov.sub"))}
     ${stall}
     <div class="grid grid-4">
-      ${statCard(num(totalDrawers), t("ov.statDrawers"), drawersSub)}
+      ${statCard(num(totalDrawers), t("ov.statDrawers"), drawersSub, drawersTip)}
       ${statCard(wingCount, t("ov.statWings"), t("ov.statWingsSub"))}
       ${statCard(roomCount, t("ov.statRooms"), t("ov.statRoomsSub"))}
       ${statCard(integrity.value, t("ov.statIntegrity"), integrity.sub)}

@@ -22,8 +22,8 @@ export function chip(label, cls = "") {
   return `<span class="chip ${cls}">${esc(label)}</span>`;
 }
 
-export function statCard(value, label, sub = "") {
-  return `<div class="card">
+export function statCard(value, label, sub = "", title = "") {
+  return `<div class="card"${title ? ` title="${esc(title)}"` : ""}>
     <div class="stat-num">${esc(value)}</div>
     <div class="stat-label">${esc(label)}${sub ? ` · ${esc(sub)}` : ""}</div>
   </div>`;

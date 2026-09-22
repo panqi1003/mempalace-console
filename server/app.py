@@ -131,6 +131,10 @@ def create_app(reader: ReadOnlyReader | None = None) -> FastAPI:
     def diary(agent: str = Query(...), last_n: int = Query(20, ge=1, le=100)):
         return _ok(r.diary(agent, last_n=last_n))
 
+    @app.get("/api/diary/agents")
+    def diary_agents():
+        return _ok(r.diary_agents())
+
     @app.get("/api/events")
     def events(limit: int = Query(50, ge=1, le=200)):
         return _ok(r.events(limit=limit))

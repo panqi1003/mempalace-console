@@ -87,6 +87,7 @@ function graphOption(facts) {
         label: {
           show: true,
           position: "right",
+          formatter: (v) => (String(v).length > 16 ? `${String(v).slice(0, 15)}…` : v),
           color: cssColor("var(--ink-000)"),
           fontFamily: "monospace",
           fontSize: 10,

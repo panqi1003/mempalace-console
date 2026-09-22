@@ -48,9 +48,11 @@ function issueRow(a, { title, count, level, impact, cause, samples = [] }) {
               )}</button>`
             : `<button type="button" class="chip sample-chip" data-id="${esc(
                 s.a
-              )}" style="cursor:pointer" title="${t("au.tipDrawer")}">${esc(
-                String(s.a).slice(0, 20)
-              )} ↔ ${esc(String(s.b).slice(0, 20))}</button>`
+              )}" style="cursor:pointer" title="${esc(s.a)} ↔ ${esc(
+                s.b
+              )}">${esc(String(s.a).slice(0, 36))}… ↔ ${esc(
+                String(s.b).slice(0, 36)
+              )}…</button>`
         )
         .join("")}</div>`
     : "";
@@ -214,7 +216,7 @@ function reportText(a) {
       c: (a.dup_semantic_sample || []).length,
     })
   );
-  lines.push(t("au.reportLine4", { json: JSON.stringify(a.by_ingest) }));
+  lines.push(t("au.reportLine4", { field: (a.composition || { field: "ingest_mode" }).field, json: JSON.stringify((a.composition || { counts: a.by_ingest }).counts) }));
   return lines.join("\n");
 }
 
@@ -273,7 +275,7 @@ async function render(container) {
         <div id="audit-activity"><div class="skeleton" style="height:80px"></div></div>
       </div>
       <div class="card">
-        <h3 class="card-title">${t("au.ingestCard")}</h3>
+        <h3 class="card-title">${t("au.ingestCardBase")}</h3>
         <div id="audit-ingest"><div class="skeleton" style="height:80px"></div></div>
       </div>
     </div>
@@ -331,7 +333,10 @@ async function render(container) {
             copyBtn.textContent = t("au.copyFail");
           }
         });
-      renderIngest(ingEl, a.by_ingest, a.total);
+      const comp = a.composition || { field: "ingest_mode", counts: a.by_ingest };
+      const ingTitle = ingEl.closest(".card")?.querySelector(".card-title");
+      if (ingTitle) ingTitle.textContent = t("au.ingestCard", { field: comp.field });
+      renderIngest(ingEl, comp.counts, a.total);
       const redCount = holder.querySelectorAll(".alert.is-err").length;
       const yellowCount = holder.querySelectorAll(".alert.is-warn").length;
       const summary = {
