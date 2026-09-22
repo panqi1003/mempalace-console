@@ -164,6 +164,32 @@ async def main() -> int:
         except Exception as e:
             fail("KG 实体事实", str(e)[:140])
 
+        # --- 6c. KG 标签 formatter 契约：ECharts 以 params 对象调用，必须返回字符串 ---
+        try:
+            fmt = await page.evaluate(
+                """() => {
+                    const inst = window.echarts && window.echarts.getInstanceByDom(
+                        document.querySelector('#kg-chart'));
+                    if (!inst) return { err: 'no instance' };
+                    const f = inst.getOption().series[0]?.label?.formatter;
+                    if (typeof f !== 'function') return { err: 'no formatter' };
+                    const long = f({ name: 'very-long-entity-name-abcdef' });
+                    const short = f({ name: 'alpha-service' });
+                    return {
+                        longType: typeof long, long: String(long),
+                        shortType: typeof short, short: String(short),
+                    };
+                }"""
+            )
+            assert fmt.get("longType") == "string" and fmt.get("shortType") == "string", (
+                f"formatter 必须返回字符串（ECharts params 对象契约）: {fmt}"
+            )
+            assert len(fmt["long"]) <= 16 and fmt["long"].endswith("…"), f"长名未截断: {fmt['long']!r}"
+            assert fmt["short"] == "alpha-service", f"短名被改动: {fmt['short']!r}"
+            ok(f"KG 标签 formatter 契约（长名截断 {fmt['long']!r}，短名保持）")
+        except Exception as e:
+            fail("KG 标签 formatter", str(e)[:140])
+
         # --- 6b. 宫殿导航图：traverse（下拉选房 + 数组渲染回归） ---
         await goto("graph")
         try:
