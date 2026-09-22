@@ -33,7 +33,8 @@ function graphOption(facts) {
   const accent = cssColor("var(--accent)");
   const violet = cssColor("var(--violet-400)");
   const inkDim = cssColor("var(--ink-500)");
-  const inkFaint = cssColor("var(--ink-600)");
+  const edgeStrong = cssColor("var(--ink-300)");
+  const edgeMention = cssColor("var(--ink-400)");
   const nodes = new Map();
   const edges = [];
   for (const f of facts) {
@@ -65,8 +66,8 @@ function graphOption(facts) {
       source: s,
       target: o,
       lineStyle: {
-        color: f.current ? inkDim : inkFaint,
-        opacity: f.current ? 0.8 : 0.35,
+        color: f.current ? edgeStrong : inkDim,
+        opacity: f.current ? 0.9 : 0.45,
       },
     });
   }
@@ -95,7 +96,7 @@ function graphOption(facts) {
         target: ent,
         mention: true,
         snippet: o.slice(0, 160),
-        lineStyle: { color: inkFaint, opacity: 0.35, width: 1, type: "dashed" },
+        lineStyle: { color: edgeMention, opacity: 0.6, width: 1, type: "dashed" },
       });
     }
   }
@@ -134,7 +135,7 @@ function graphOption(facts) {
           textBorderWidth: 3,
         },
         labelLayout: { hideOverlap: true },
-        force: { repulsion: 420, edgeLength: 110, gravity: 0.08 },
+        force: { repulsion: 1000, edgeLength: 150, gravity: 0.06 },
         data: [...nodes.values()],
         links: edges,
       },
@@ -150,13 +151,13 @@ async function render(container) {
       <div class="card"><div class="stat-num" id="kg-triples">…</div><div class="stat-label">${t("kg.statTriples")}</div></div>
       <div class="card"><div class="stat-num" id="kg-current">…</div><div class="stat-label">${t("kg.statCurrent")}</div><div id="kg-expired-line" class="muted" style="font-size:11px"></div></div>
     </div>
-    <div class="grid grid-2 mt-4">
-      <div class="card"><h3 class="card-title">${t("kg.chart")}</h3>
-        <div id="kg-chart" style="height:460px"></div>
-      </div>
-      <div class="card"><h3 class="card-title">${t("kg.timeline")}</h3>
-        <div id="kg-timeline" style="max-height:460px;overflow-y:auto"></div>
-      </div>
+    <div class="card mt-4">
+      <h3 class="card-title">${t("kg.chart")}</h3>
+      <div id="kg-chart" style="height:620px"></div>
+    </div>
+    <div class="card mt-4">
+      <h3 class="card-title">${t("kg.timeline")}</h3>
+      <div id="kg-timeline" style="max-height:420px;overflow-y:auto"></div>
     </div>
     <div class="card mt-4" id="kg-facts-card">
       <h3 class="card-title">${t("kg.factsCard")}</h3>
@@ -222,11 +223,7 @@ async function render(container) {
       if (key === prevKey) stable += 1;
       else stable = 0;
       prevKey = key;
-      const settled = stable >= 1; /* 连续两次采样（700ms 间隔）布局不动 = 稳定 */
-      const timedOut = ticks >= 20; /* 10s 兜底 */
-      if (!settled && !timedOut) return;
-      fitted = true;
-      clearInterval(fitTimer);
+      /* 边稳边跟：布局期间每轮都适配（视图跟随），连续两轮不动或超时后收手 */
       const cw = c.getWidth();
       const ch = c.getHeight();
       const pad = 100;
@@ -235,16 +232,21 @@ async function render(container) {
         (cw - pad) / Math.max(1, maxX - minX),
         (ch - pad) / Math.max(1, maxY - minY)
       );
-      if (zoom >= 0.999) return;
-      c.setOption({
-        series: [{ zoom, center: [(minX + maxX) / 2, (minY + maxY) / 2] }],
-      });
+      if (zoom < 0.999) {
+        c.setOption({
+          series: [{ zoom, center: [(minX + maxX) / 2, (minY + maxY) / 2] }],
+        });
+      }
+      if (stable >= 2 || ticks >= 24) {
+        fitted = true;
+        clearInterval(fitTimer);
+      }
     } catch {
       /* 内部 API 不可用则放弃适配，不影响页面 */
       fitted = true;
       clearInterval(fitTimer);
     }
-  }, 700);
+  }, 500);
   chart.on("click", (p) => {
     if (p.componentType !== "series" || p.dataType !== "node" || !p.name) return;
     void loadFacts(p.name);

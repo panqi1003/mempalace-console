@@ -219,6 +219,82 @@ async def main() -> int:
         except Exception as e:
             fail("KG 标签 formatter", str(e)[:140])
 
+        # --- 6d. KG 连线可见性契约：实线用亮色 / 虚线提及可见 / 过期用暗色 ---
+        try:
+            edge = await page.evaluate(
+                """() => {
+                    const inst = window.echarts && window.echarts.getInstanceByDom(
+                        document.querySelector('#kg-chart'));
+                    if (!inst) return { err: 'no instance' };
+                    const links = inst.getOption().series[0].links || [];
+                    const cs = getComputedStyle(document.documentElement);
+                    const tok = (n) => cs.getPropertyValue(n).trim();
+                    const STRONG = tok('--ink-300');
+                    const MENTION = tok('--ink-400');
+                    const EXPIRED = tok('--ink-500');
+                    const bad = [];
+                    let solid = 0, dashed = 0, expired = 0;
+                    for (const l of links) {
+                        const ls = l.lineStyle || {};
+                        const c = String(ls.color || '');
+                        const op = Number(ls.opacity ?? 1);
+                        if (l.mention) {
+                            dashed += 1;
+                            if (c !== MENTION || op < 0.5) bad.push(['mention', c, op]);
+                        } else if (op >= 0.8) {
+                            solid += 1;
+                            if (c !== STRONG) bad.push(['solid', c, op]);
+                        } else {
+                            expired += 1;
+                            if (c !== EXPIRED || op > 0.6) bad.push(['expired', c, op]);
+                        }
+                    }
+                    return { total: links.length, solid, dashed, expired, bad: bad.slice(0, 4) };
+                }"""
+            )
+            assert not edge.get("bad"), f"连线颜色契约不符（实线应 {edge}）"
+            ok(f"KG 连线可见性（实线 {edge['solid']} 亮色 / 虚提及 {edge['dashed']} / 过期 {edge['expired']}）")
+        except Exception as e:
+            fail("KG 连线可见性", str(e)[:140])
+
+        # --- 6e. KG 画布尺寸与节点间距 ---
+        try:
+            g = await page.evaluate(
+                """() => {
+                    const el = document.querySelector('#kg-chart');
+                    const inst = window.echarts && window.echarts.getInstanceByDom(el);
+                    if (!inst) return { err: 'no instance' };
+                    const d = inst.getModel().getSeriesByIndex(0).getData();
+                    const pts = [];
+                    for (let i = 0; i < d.count(); i++) {
+                        const l = d.getItemLayout(i);
+                        if (!l) continue;
+                        const p = inst.convertToPixel({ seriesIndex: 0 }, [l[0], l[1]]);
+                        if (p) pts.push(p);
+                    }
+                    let mind = Infinity;
+                    const gaps = [];
+                    for (let i = 0; i < pts.length; i++)
+                        for (let j = i + 1; j < pts.length; j++) {
+                            const dd = Math.hypot(pts[i][0] - pts[j][0], pts[i][1] - pts[j][1]);
+                            gaps.push(dd);
+                            if (dd < mind) mind = dd;
+                        }
+                    gaps.sort((a, b) => a - b);
+                    const p10 = gaps.length
+                        ? Math.round(gaps[Math.floor(gaps.length * 0.1)])
+                        : 0;
+                    return { w: inst.getWidth(), h: inst.getHeight(), nodes: pts.length,
+                             minGap: Math.round(mind), p10 };
+                }"""
+            )
+            assert g.get("w", 0) >= 1000, f"画布未加宽: {g}"
+            assert g.get("h", 0) >= 600, f"画布未加高: {g}"
+            assert g.get("p10", 0) >= 60, f"节点间距分布过挤（p10 应≥60px）: {g}"
+            ok(f"KG 画布 {g['w']}x{g['h']} + 间距 p10={g['p10']}px / 最小 {g['minGap']}px（{g['nodes']} 节点）")
+        except Exception as e:
+            fail("KG 画布/间距", str(e)[:140])
+
         # --- 6b. 宫殿导航图：traverse（下拉选房 + 数组渲染回归） ---
         await goto("graph")
         try:
