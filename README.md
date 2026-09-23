@@ -37,7 +37,7 @@
 
 ```bash
 # 1) 安装（任选平台）
-python -m venv .venv
+python3 -m venv .venv                              # macOS/Linux（Windows: python -m venv .venv）
 .venv/bin/pip install -r requirements.txt        # macOS/Linux
 # .venv\Scripts\pip install -r requirements.txt  # Windows
 
