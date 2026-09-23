@@ -54,3 +54,32 @@ jobs:
           fi
           echo "boot OK"
           kill "$SERVER_PID" 2>/dev/null || true
+
+  ui-smoke:
+    name: ui-smoke (ubuntu · chromium)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Install (venv + requirements + playwright)
+        shell: bash
+        run: |
+          python -m venv .venv
+          .venv/bin/python -m pip install --disable-pip-version-check -q --upgrade pip
+          .venv/bin/python -m pip install --disable-pip-version-check -q -r requirements.txt
+          .venv/bin/python -m pip install --disable-pip-version-check -q playwright
+          .venv/bin/python -m playwright install --with-deps chromium
+      - name: Boot server (static files only; APIs intercepted by the test)
+        shell: bash
+        run: |
+          nohup .venv/bin/python -m server.main >server.log 2>&1 &
+          for i in $(seq 1 30); do
+            if curl -sf http://127.0.0.1:8766/ | grep -q "MemPalace"; then break; fi
+            sleep 1
+          done
+          curl -sf http://127.0.0.1:8766/ | grep -q "MemPalace" && echo "server up"
+      - name: Run UI smoke (deterministic demo data)
+        shell: bash
+        run: .venv/bin/python tests/ui_smoke.py
