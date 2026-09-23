@@ -1,5 +1,6 @@
 # MemPalace 可视化管理台
 
+![CI](https://github.com/panqi1003/mempalace-console/actions/workflows/ci.yml/badge.svg)
 ![License](https://img.shields.io/github/license/panqi1003/mempalace-console)
 ![Python](https://img.shields.io/badge/python-3.10%2B-3776AB)
 ![Release](https://img.shields.io/github/v/release/panqi1003/mempalace-console)

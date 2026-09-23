@@ -2,12 +2,27 @@
 
 from __future__ import annotations
 
+import sys
+
 import uvicorn
 
 from . import config
 from .app import create_app
 
 app = create_app()
+
+
+def _harden_stdout() -> None:
+    """受限输出环境（如 Windows cp1252 管道）下避免打印崩溃：错误策略降级为 replace。
+
+    不改编码：中文终端（GBK/UTF-8）照常显示中文；编码能力不足的流把无法编码的
+    字符替换为 '?'，不再抛 UnicodeEncodeError。
+    """
+    for stream in (sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(errors="replace")
+        except (AttributeError, ValueError):
+            pass
 
 
 def _banner(port: int) -> None:
@@ -24,6 +39,7 @@ def _banner(port: int) -> None:
 
 
 def main() -> None:
+    _harden_stdout()
     port = config.VIZ_PORT
     _banner(port)
     try:
